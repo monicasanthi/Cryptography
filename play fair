@@ -1,0 +1,58 @@
+import string
+
+def generate_playfair_matrix(keyword):
+    keyword = keyword.replace(' ', '').upper()
+    matrix = []
+    alphabet = list(string.ascii_uppercase)
+
+    keyword_set = set(keyword)
+    for letter in keyword_set:
+        if letter != 'J':
+            matrix.append(letter)
+    for letter in alphabet:
+        if letter not in matrix and letter != 'J':
+            matrix.append(letter)
+
+    matrix = [matrix[i:i+5] for i in range(0, len(matrix), 5)]
+    return matrix
+
+def prepare_text(text):
+    text = text.replace(' ', '').upper()
+    text = text.replace('J', 'I')
+    digraphs = []
+    i = 0
+    while i < len(text):
+        if i == len(text) - 1 or text[i] == text[i + 1]:
+            digraphs.append(text[i] + 'X')
+            i += 1
+        else:
+            digraphs.append(text[i:i+2])
+            i += 2
+    return digraphs
+
+def encrypt_playfair(plaintext, matrix):
+    encrypted_text = []
+    for pair in plaintext:
+        row1, col1 = 0, 0
+        row2, col2 = 0, 0
+        for i in range(5):
+            for j in range(5):
+                if matrix[i][j] == pair[0]:
+                    row1, col1 = i, j
+                elif matrix[i][j] == pair[1]:
+                    row2, col2 = i, j
+        if col1 == col2: 
+            encrypted_text.append(matrix[(row1 + 1) % 5][col1] + matrix[(row2 + 1) % 5][col2])
+        elif row1 == row2:  
+            encrypted_text.append(matrix[row1][(col1 + 1) % 5] + matrix[row2][(col2 + 1) % 5])
+        else:  
+            encrypted_text.append(matrix[row1][col2] + matrix[row2][col1])
+    return ''.join(encrypted_text)
+
+keyword = input("Enter keyword: ")
+plaintext = input("Enter plaintext: ")
+
+matrix = generate_playfair_matrix(keyword)
+prepared_text = prepare_text(plaintext)
+encrypted_text = encrypt_playfair(prepared_text, matrix)
+print("Encrypted text:", encrypted_text)
