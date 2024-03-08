@@ -1,0 +1,92 @@
+def encrypt_shift_cipher(message, key):
+    encrypted_message = ""
+    for char in message:
+        if char.isalpha():
+            if char.isupper():
+                encrypted_char = chr((ord(char) - ord('A') + key) % 26 + ord('A'))
+            else:
+                encrypted_char = chr((ord(char) - ord('a') + key) % 26 + ord('a'))
+            encrypted_message += encrypted_char
+        else:
+            encrypted_message += char
+    return encrypted_message
+
+def decrypt_shift_cipher(message, key):
+    return encrypt_shift_cipher(message, 26 - key)
+
+def encrypt_ecb(message, key):
+    return encrypt_shift_cipher(message, key)
+
+def decrypt_ecb(message, key):
+    return decrypt_shift_cipher(message, key)
+
+def encrypt_cbc(message, key, iv):
+    encrypted_message = ""
+    previous_char = ord(iv)
+    for char in message:
+        if char.isalpha():
+            char = chr((ord(char) + previous_char - ord('A')) % 26 + ord('A'))
+            encrypted_char = encrypt_shift_cipher(char, key)
+            encrypted_message += encrypted_char
+            previous_char = ord(encrypted_char)
+        else:
+            encrypted_message += char
+    return encrypted_message
+
+def decrypt_cbc(message, key, iv):
+    decrypted_message = ""
+    previous_char = ord(iv)
+    for char in message:
+        if char.isalpha():
+            decrypted_char = decrypt_shift_cipher(char, key)
+            decrypted_char = chr((ord(decrypted_char) - previous_char + 26) % 26 + ord('A'))
+            decrypted_message += decrypted_char
+            previous_char = ord(char)
+        else:
+            decrypted_message += char
+    return decrypted_message
+
+def encrypt_ctr(message, key, nonce):
+    encrypted_message = ""
+    for i, char in enumerate(message):
+        if char.isalpha():
+            nonce_char = nonce[i % len(nonce)]
+            char = chr((ord(char) + ord(nonce_char) - ord('A')) % 26 + ord('A'))
+            encrypted_char = encrypt_shift_cipher(char, key)
+            encrypted_message += encrypted_char
+        else:
+            encrypted_message += char
+    return encrypted_message
+
+def decrypt_ctr(message, key, nonce):
+    return encrypt_ctr(message, 26 - key, nonce)
+
+def main():
+    message = input("Enter the message to be encrypted: ")
+    key = int(input("Enter the encryption key (an integer between 0 and 25): "))
+    mode = int(input("Enter the mode of operation (1 for ECB, 2 for CBC, 3 for CTR): "))
+
+    operations = {
+        1: (encrypt_ecb, decrypt_ecb),
+        2: (encrypt_cbc, decrypt_cbc),
+        3: (encrypt_ctr, decrypt_ctr)
+    }
+
+    if mode in operations:
+        encrypt_op, decrypt_op = operations[mode]
+        if mode == 2:
+            iv = input("Enter the initialization vector (1 character): ")[0] # Take only the first character
+            encrypted_message = encrypt_op(message, key, iv)
+        elif mode == 3:
+            nonce = input("Enter the nonce: ")
+            encrypted_message = encrypt_op(message, key, nonce)
+        else:
+            encrypted_message = encrypt_op(message, key)
+        print(f"Encrypted message: {encrypted_message}")
+        decrypted_message = decrypt_op(encrypted_message, key, iv if mode == 2 else nonce)
+        print(f"Decrypted message: {decrypted_message}")
+    else:
+        print("Invalid mode selected.")
+
+if __name__ == "__main__":
+    main()
