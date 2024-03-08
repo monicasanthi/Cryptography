@@ -1,0 +1,32 @@
+def encrypt_vigenere(plaintext, key):
+    ciphertext = ""
+    for i in range(len(plaintext)):
+        key_char = key[i % len(key)]
+        plaintext_char = plaintext[i].upper()
+        if plaintext_char.isalpha():
+            shift = ord(key_char.upper()) - ord('A')
+            ciphertext += chr((ord(plaintext_char) - ord('A') + shift) % 26 + ord('A'))
+        else:
+            ciphertext += plaintext_char
+    return ciphertext
+
+def decrypt_vigenere(ciphertext, key):
+    plaintext = ""
+    for i in range(len(ciphertext)):
+        key_char = key[i % len(key)]
+        ciphertext_char = ciphertext[i].upper()
+        if ciphertext_char.isalpha():
+            shift = ord(key_char.upper()) - ord('A')
+            plaintext += chr((ord(ciphertext_char) - ord('A') - shift) % 26 + ord('A'))
+        else:
+            plaintext += ciphertext_char
+    return plaintext
+
+plaintext = input("Enter plaintext: ")
+key = input("Enter key: ")
+
+ciphertext = encrypt_vigenere(plaintext, key)
+print("Encrypted text:", ciphertext)
+
+decrypted_text = decrypt_vigenere(ciphertext, key)
+print("Decrypted text:", decrypted_text)
